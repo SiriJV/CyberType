@@ -1,0 +1,46 @@
+.typing-mode-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.active {
+    color: greenyellow;
+
+    &:hover {
+        color: greenyellow;
+    }
+}
+
+button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+button, input {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    border: none;
+    padding: 5px 10px;
+}
+
+button {
+    transition: color 0.3s ease;
+    font-weight: 600;
+    color: white;
+    background: none;
+}
+
+button:hover {
+    color: yellow;
+}
+
+.options, .sub-options {
+    display: flex;
+}
+
+.options, .sub-options, input{
+    border-radius: 5px;
+    background-color: #212121;
+    width: fit-content;
+}
