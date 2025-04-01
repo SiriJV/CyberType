@@ -9,10 +9,12 @@ function App() {
     <>
       <h1>CyberType</h1>
       <TypingModeSelector />
+      <main className="main-container">
       <TypingStats />
       <TypingArea />
+      </main>
     </>
   )
 }
 
-export default App
+export default App;
