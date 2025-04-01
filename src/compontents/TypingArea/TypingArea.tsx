@@ -1,65 +1,100 @@
-import './TypingArea.scss';
-
-// const TypingArea = () => {
-//     return (
-//         <>
-//             <p className="typing-area">also fox long people in the house tall never been enough to be alas the golden in forest pot of money that out road example for it to work quality grass water this before home tent torch also fox long people in the house tall never been enough to be alas the golden in forest pot of money that out road example for it to work quality grass water this before home tent torch</p>
-//         </>
-//     )
-// }
-
-// export default TypingArea;
-
 import React, { useState, useEffect } from "react";
-import { getRandomWords } from "../../utils/wordGenerator";
-import "./TypingArea.scss"; // Styla senare
+import wordsList from "../../utils/wordGenerator";
+import Word from "../Word/Word";
+import "./TypingArea.scss";
+
+const getRandomWords = (count: number) => {
+  return Array.from({ length: count }, () =>
+    wordsList[Math.floor(Math.random() * wordsList.length)]
+  );
+};
 
 const TypingArea = () => {
-  const [words, setWords] = useState(getRandomWords(100)); // 100 random ord
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [rows, setRows] = useState([
+    getRandomWords(10), 
+    getRandomWords(10),
+    getRandomWords(10),
+  ]);
   const [input, setInput] = useState("");
-  const [typedWords, setTypedWords] = useState([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [typedHistory, setTypedHistory] = useState<string[]>([]);
+  const [isFirstRowActive, setIsFirstRowActive] = useState(true); 
 
   useEffect(() => {
-    if (typedWords.length > 0 && typedWords.length % 2 === 0) {
-      // När två rader är klara, flytta fram orden
-      setWords((prevWords) => prevWords.slice(typedWords.length));
+    if (currentWordIndex >= rows[isFirstRowActive ? 0 : 1].length) {
+      shiftRows();
     }
-  }, [typedWords]);
+  }, [currentWordIndex]);
 
-  const handleInput = (e) => {
+  const shiftRows = () => {
+    if (isFirstRowActive) {
+      setIsFirstRowActive(false);
+      setTypedHistory([]);
+      setCurrentWordIndex(0); 
+    } else {
+      setRows((prevRows) => [
+        prevRows[1], 
+        prevRows[2], 
+        getRandomWords(10), 
+      ]);
+      setTypedHistory([]); 
+      setCurrentWordIndex(0);
+    }
+  };
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    const activeRowIndex = isFirstRowActive ? 0 : 1;
+    const currentWord = rows[activeRowIndex][currentWordIndex];
+
     if (value.endsWith(" ")) {
-      // När användaren trycker på SPACE
-      const word = value.trim();
-      if (word === words[currentIndex]) {
-        setTypedWords([...typedWords, { word, correct: true }]);
-      } else {
-        setTypedWords([...typedWords, { word, correct: false }]);
-      }
-      setInput(""); // Reset input
-      setCurrentIndex(currentIndex + 1);
+      setTypedHistory([...typedHistory, value.trim()]);
+      setCurrentWordIndex(currentWordIndex + 1);
+      setInput("");
     } else {
       setInput(value);
     }
   };
 
   return (
-    <div className="typing-area">
-      <div className="words">
-        {words.slice(0, 3).map((word, index) => (
-          <span key={index} className={index === 1 ? "active-line" : ""}>
-            {word}
-          </span>
-        ))}
+    <section className="typing-area">
+        <article className="remaining">0/100</article>
+      <div className="words-container">
+        <div className={`row ${isFirstRowActive ? "active-row" : "completed-row"}`}>
+          {rows[0].map((word, index) => (
+            <Word
+              key={`first-${index}`}
+              word={word}
+              typed={isFirstRowActive ? (index === currentWordIndex ? input : typedHistory[index] || "") : ""}
+            />
+          ))}
+        </div>
+
+        <div className={`row ${isFirstRowActive ? "upcoming-row" : "active-row"}`}>
+          {rows[1].map((word, index) => (
+            <Word
+              key={`second-${index}`}
+              word={word}
+              typed={!isFirstRowActive ? (index === currentWordIndex ? input : typedHistory[index] || "") : ""}
+            />
+          ))}
+        </div>
+
+        <div className="row upcoming-row">
+          {rows[2].map((word, index) => (
+            <Word key={`third-${index}`} word={word} typed="" />
+          ))}
+        </div>
       </div>
+
       <input
         type="text"
         value={input}
         onChange={handleInput}
         autoFocus
+        className="typing-input"
       />
-    </div>
+    </section>
   );
 };
 
